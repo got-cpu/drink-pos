@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ระบบขายน้ำ 🧋</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Prompt:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3450;
+    --accent: #f5a623;
+    --accent2: #ff6b6b;
+    --accent3: #4ecdc4;
+    --accent4: #a29bfe;
+    --text: #f0f0f0;
+    --text2: #8890b5;
+    --green: #00d68f;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+  }
+  .topbar-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+  }
+  .topbar-title span { color: var(--text); font-weight: 400; font-size: 0.85rem; display: block; }
+  .date-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 12px 8px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-icon { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  /* ── SIZE SELECTOR ── */
+  .size-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .size-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all .15s;
+    text-align: center;
+  }
+  .size-btn.active {
+    border-color: var(--accent);
+    background: rgba(245,166,35,0.15);
+    color: var(--accent);
+  }
+  .size-price { font-size: 0.7rem; font-weight: 400; display: block; color: var(--text2); }
+
+  /* ── MENU GRID ── */
+  .section-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--text2);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 16px 0 10px;
+  }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .menu-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform .12s, border-color .12s;
+    user-select: none;
+  }
+  .menu-card:active { transform: scale(0.95); }
+  .menu-card.sold { border-color: var(--accent); background: rgba(245,166,35,0.06); }
+  .menu-card-emoji { font-size: 2rem; display: block; margin-bottom: 6px; }
+  .menu-card-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .menu-card-price {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .menu-card-count {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .menu-card-count.hidden { display: none; }
+
+  /* ── BOTTOM CART BAR ── */
+  .cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+  }
+  .cart-summary {
+    flex: 1;
+  }
+  .cart-total-cups {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--accent);
+  }
+  .cart-total-cups span { color: var(--text2); font-size: 0.8rem; font-weight: 400; }
+  .cart-total-thb {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .confirm-btn {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 22px;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    white-space: nowrap;
+  }
+  .confirm-btn:active { transform: scale(0.96); opacity: 0.85; }
+  .confirm-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ── SPACER for fixed bar ── */
+  .page-spacer { height: 80px; }
+
+  /* ── SUMMARY PAGE ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat-card.wide { grid-column: 1 / -1; }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-family: 'Prompt', sans-serif;
+  }
+  .stat-value {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
+  .stat-value.green { color: var(--green); }
+  .stat-value.blue { color: var(--accent3); }
+  .stat-value.purple { color: var(--accent4); }
+  .stat-sub { font-size: 0.75rem; color: var(--text2); margin-top: 2px; }
+
+  /* ── LEADERBOARD ── */
+  .rank-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .rank-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .rank-no {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    width: 28px;
+    text-align: center;
+    color: var(--text2);
+  }
+  .rank-no.gold { color: #ffd700; }
+  .rank-no.silver { color: #c0c0c0; }
+  .rank-no.bronze { color: #cd7f32; }
+  .rank-emoji { font-size: 1.6rem; }
+  .rank-info { flex: 1; }
+  .rank-name { font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 0.9rem; }
+  .rank-detail { font-size: 0.75rem; color: var(--text2); }
+  .rank-cups {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+    text-align: right;
+  }
+  .rank-cups span { display: block; font-size: 0.7rem; color: var(--green); font-weight: 600; }
+
+  /* ── HISTORY LIST ── */
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .history-time { font-size: 0.75rem; color: var(--text2); }
+  .history-items { font-size: 0.85rem; font-weight: 600; margin: 2px 0; }
+  .history-total { color: var(--green); font-weight: 700; }
+
+  /* ── RESET BTN ── */
+  .reset-area { margin-top: 24px; text-align: center; }
+  .reset-btn {
+    background: transparent;
+    border: 1.5px solid var(--accent2);
+    color: var(--accent2);
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--green);
+    color: #000;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all .3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    margin: 20px 0 12px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* empty state */
+  .empty { text-align: center; padding: 40px 20px; color: var(--text2); }
+  .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  @media (min-width: 480px) {
+    .menu-grid { grid-template-columns: repeat(3, 1fr); }
+    .stat-grid { grid-template-columns: repeat(4, 1fr); }
+    .stat-card.wide { grid-column: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title">🧋 ร้านน้ำของเรา <span id="topDate"></span></div>
+  <div class="date-badge" id="clockBadge">--:--</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPage('sell')">
+    <span class="tab-icon">🛒</span>ขายน้ำ
+  </div>
+  <div class="tab" onclick="showPage('summary')">
+    <span class="tab-icon">📊</span>ยอดวันนี้
+  </div>
+  <div class="tab" onclick="showPage('history')">
+    <span class="tab-icon">🕐</span>ประวัติ
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ PAGE: SELL ═══ -->
+<div class="page active" id="page-sell">
+
+  <!-- Size selector -->
+  <div class="size-bar" id="sizeBar">
+    <div class="size-btn active" data-size="S" onclick="selectSize(this,'S')">
+      S <span class="size-price" id="sp-S"></span>
+    </div>
+    <div class="size-btn" data-size="M" onclick="selectSize(this,'M')">
+      M <span class="size-price" id="sp-M"></span>
+    </div>
+    <div class="size-btn" data-size="L" onclick="selectSize(this,'L')">
+      L <span class="size-price" id="sp-L"></span>
+    </div>
+  </div>
+
+  <!-- Menu sections rendered by JS -->
+  <div id="menuContainer"></div>
+
+  <div class="page-spacer"></div>
+</div>
+
+<!-- ═══ PAGE: SUMMARY ═══ -->
+<div class="page" id="page-summary">
+  <div class="stat-grid" id="statGrid"></div>
+  <div class="section-title">🏆 อันดับขายดี</div>
+  <div class="rank-list" id="rankList"></div>
+  <div class="reset-area">
+    <button class="reset-btn" onclick="confirmReset()">🗑 รีเซ็ตยอดวันนี้</button>
+  </div>
+  <div class="page-spacer"></div>
+</div>
+
+<!-- ═══ PAGE: HISTORY ═══ -->
+<div class="page" id="page-history">
+  <div class="section-title">📋 รายการที่บันทึกไว้</div>
+  <div id="historyList"></div>
+  <div class="page-spacer"></div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar">
+  <div class="cart-summary">
+    <div class="cart-total-cups"><span id="cartCups">0</span> <span>แก้ว</span></div>
+    <div class="cart-total-thb" id="cartThb">฿0</div>
+  </div>
+  <button class="confirm-btn" id="confirmBtn" onclick="confirmSale()" disabled>
+    ✅ บันทึกการขาย
+  </button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+const MENU = [
+  { id:'tea_cold',   emoji:'🧋', name:'ชาไทยเย็น',    cat:'ชา/กาแฟ', price:{S:25,M:35,L:45} },
+  { id:'green_tea',  emoji:'🍵', name:'ชาเขียวนม',    cat:'ชา/กาแฟ', price:{S:25,M:35,L:45} },
+  { id:'coffee',     emoji:'☕', name:'กาแฟเย็น',     cat:'ชา/กาแฟ', price:{S:30,M:40,L:50} },
+  { id:'matcha',     emoji:'🍃', name:'มัทฉะนม',      cat:'ชา/กาแฟ', price:{S:35,M:45,L:55} },
+  { id:'orange',     emoji:'🍊', name:'น้ำส้มปั่น',   cat:'น้ำผลไม้/ปั่น', price:{S:30,M:40,L:50} },
+  { id:'watermelon', emoji:'🍉', name:'แตงโมปั่น',   cat:'น้ำผลไม้/ปั่น', price:{S:30,M:40,L:50} },
+  { id:'mango',      emoji:'🥭', name:'มะม่วงปั่น',  cat:'น้ำผลไม้/ปั่น', price:{S:35,M:45,L:55} },
+  { id:'mixed',      emoji:'🍹', name:'รวมมิตรปั่น', cat:'น้ำผลไม้/ปั่น', price:{S:35,M:45,L:55} },
+  { id:'nom_yen',    emoji:'🥛', name:'นมเย็น',       cat:'ชานมไข่มุก', price:{S:25,M:30,L:40} },
+  { id:'boba_tea',   emoji:'🧊', name:'ชานมไข่มุก',  cat:'ชานมไข่มุก', price:{S:40,M:50,L:60} },
+  { id:'boba_matcha',emoji:'💚', name:'มัทฉะไข่มุก', cat:'ชานมไข่มุก', price:{S:45,M:55,L:65} },
+  { id:'water',      emoji:'💧', name:'น้ำเปล่า',     cat:'น้ำอื่นๆ', price:{S:10,M:15,L:20} },
+  { id:'soda',       emoji:'🫧', name:'โซดา',         cat:'น้ำอื่นๆ', price:{S:20,M:25,L:30} },
+  { id:'lemon',      emoji:'🍋', name:'น้ำมะนาว',    cat:'น้ำอื่นๆ', price:{S:25,M:30,L:40} },
+];
+
+const CATS = ['ชา/กาแฟ','น้ำผลไม้/ปั่น','ชานมไข่มุก','น้ำอื่นๆ'];
+
+// ══════════════════════════════════════════════════════
+//  STATE (stored in localStorage)
+// ══════════════════════════════════════════════════════
+function loadState() {
+  try {
+    const s = localStorage.getItem('drinkPos');
+    return s ? JSON.parse(s) : { cart:{}, sold:{}, history:[] };
+  } catch(e) { return { cart:{}, sold:{}, history:[] }; }
+}
+function saveState(s) {
+  try { localStorage.setItem('drinkPos', JSON.stringify(s)); } catch(e){}
+}
+
+let state = loadState();
+let currentSize = 'S';
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  buildMenu();
+  renderCart();
+  renderSummary();
+  renderHistory();
+  // Update size price labels
+  ['S','M','L'].forEach(sz => {
+    const avg = Math.round(MENU.filter(m=>m.price[sz]).reduce((a,m)=>a+m.price[sz],0)/MENU.length);
+    document.getElementById('sp-'+sz).textContent = 'เริ่ม ฿'+MENU.find(m=>m.price[sz]).price[sz];
+  });
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clockBadge').textContent =
+    now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('topDate').textContent =
+    now.toLocaleDateString('th-TH',{day:'numeric',month:'short'});
+}
+
+// ══════════════════════════════════════════════════════
+//  MENU BUILD
+// ══════════════════════════════════════════════════════
+function buildMenu() {
+  const container = document.getElementById('menuContainer');
+  container.innerHTML = '';
+  CATS.forEach(cat => {
+    const items = MENU.filter(m => m.cat === cat);
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = cat;
+    container.appendChild(label);
+    const grid = document.createElement('div');
+    grid.className = 'menu-grid';
+    items.forEach(item => {
+      const key = item.id + '_' + currentSize;
+      const qty = (state.cart[key] || 0);
+      const card = document.createElement('div');
+      card.className = 'menu-card' + (qty > 0 ? ' sold' : '');
+      card.id = 'card-' + item.id;
+      card.onclick = () => addToCart(item);
+      card.innerHTML = `
+        <span class="menu-card-emoji">${item.emoji}</span>
+        <div class="menu-card-name">${item.name}</div>
+        <div class="menu-card-price">฿${item.price[currentSize]}</div>
+        <div class="menu-card-count${qty===0?' hidden':''}" id="cnt-${item.id}">${qty}</div>
+      `;
+      grid.appendChild(card);
+    });
+    container.appendChild(grid);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  SIZE SELECT
+// ══════════════════════════════════════════════════════
+function selectSize(el, sz) {
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentSize = sz;
+  buildMenu();
+  renderCart();
+}
+
+// ══════════════════════════════════════════════════════
+//  CART
+// ══════════════════════════════════════════════════════
+function addToCart(item) {
+  const key = item.id + '_' + currentSize;
+  state.cart[key] = (state.cart[key] || 0) + 1;
+  saveState(state);
+  // Update card UI
+  const card = document.getElementById('card-' + item.id);
+  if (card) {
+    card.classList.add('sold');
+    let cnt = document.getElementById('cnt-' + item.id);
+    if (cnt) { cnt.classList.remove('hidden'); cnt.textContent = state.cart[key]; }
+  }
+  renderCart();
+  // ripple toast
+  showToast(`+1 ${item.emoji} ${item.name} (${currentSize}) ฿${item.price[currentSize]}`);
+}
+
+function renderCart() {
+  let cups = 0, total = 0;
+  for (const [key, qty] of Object.entries(state.cart)) {
+    if (!qty) continue;
+    const [id, sz] = key.split('_');
+    const item = MENU.find(m => m.id === id);
+    if (item) { cups += qty; total += qty * item.price[sz]; }
+  }
+  document.getElementById('cartCups').textContent = cups;
+  document.getElementById('cartThb').textContent = '฿' + total.toLocaleString();
+  document.getElementById('confirmBtn').disabled = cups === 0;
+}
+
+function confirmSale() {
+  if (Object.keys(state.cart).length === 0) return;
+  const ts = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  let items = [], total = 0;
+  for (const [key, qty] of Object.entries(state.cart)) {
+    if (!qty) continue;
+    const [id, sz] = key.split('_');
+    const item = MENU.find(m => m.id === id);
+    if (!item) continue;
+    const subtotal = qty * item.price[sz];
+    total += subtotal;
+    items.push({ id, name: item.name, emoji: item.emoji, qty, size: sz, price: item.price[sz], subtotal });
+    // accumulate into sold
+    const k = id + '_' + sz;
+    state.sold[k] = (state.sold[k] || 0) + qty;
+  }
+  state.history.unshift({ time: ts, items, total });
+  if (state.history.length > 50) state.history.pop();
+  state.cart = {};
+  saveState(state);
+  buildMenu();
+  renderCart();
+  renderSummary();
+  renderHistory();
+  showToast('✅ บันทึกการขายแล้ว! ฿' + total.toLocaleString());
+}
+
+// ══════════════════════════════════════════════════════
+//  SUMMARY
+// ══════════════════════════════════════════════════════
+function renderSummary() {
+  let totalCups = 0, totalThb = 0;
+  const sold = state.sold;
+  for (const [key, qty] of Object.entries(sold)) {
+    const [id, sz] = key.split('_');
+    const item = MENU.find(m => m.id === id);
+    if (item) { totalCups += qty; totalThb += qty * item.price[sz]; }
+  }
+  const txCount = state.history.length;
+  const avgThb = txCount > 0 ? Math.round(totalThb / txCount) : 0;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">🧋 แก้วทั้งหมด</div>
+      <div class="stat-value">${totalCups}</div>
+      <div class="stat-sub">แก้ว</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">💰 รายได้รวม</div>
+      <div class="stat-value green">฿${totalThb.toLocaleString()}</div>
+      <div class="stat-sub">บาท</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">🧾 รายการขาย</div>
+      <div class="stat-value blue">${txCount}</div>
+      <div class="stat-sub">ครั้ง</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">📈 เฉลี่ย/ครั้ง</div>
+      <div class="stat-value purple">฿${avgThb}</div>
+      <div class="stat-sub">บาท</div>
+    </div>
+  `;
+
+  // Rank list
+  const ranks = [];
+  for (const [key, qty] of Object.entries(sold)) {
+    const [id, sz] = key.split('_');
+    const item = MENU.find(m => m.id === id);
+    if (!item) continue;
+    const existing = ranks.find(r => r.id === id);
+    if (existing) { existing.cups += qty; existing.thb += qty * item.price[sz]; }
+    else ranks.push({ id, name: item.name, emoji: item.emoji, cups: qty, thb: qty * item.price[sz] });
+  }
+  ranks.sort((a,b) => b.cups - a.cups);
+
+  const rankEl = document.getElementById('rankList');
+  if (ranks.length === 0) {
+    rankEl.innerHTML = '<div class="empty"><div class="empty-icon">🥤</div>ยังไม่มีข้อมูลการขาย</div>';
+    return;
+  }
+  const medals = ['gold','silver','bronze'];
+  rankEl.innerHTML = ranks.slice(0,8).map((r,i) => `
+    <div class="rank-item">
+      <div class="rank-no ${medals[i]||''}">${i+1}</div>
+      <div class="rank-emoji">${r.emoji}</div>
+      <div class="rank-info">
+        <div class="rank-name">${r.name}</div>
+        <div class="rank-detail">฿${r.thb.toLocaleString()} รายได้รวม</div>
+      </div>
+      <div class="rank-cups">${r.cups}<span>฿${r.thb.toLocaleString()}</span></div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════════════════
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!state.history.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีประวัติการขาย</div>';
+    return;
+  }
+  el.innerHTML = state.history.map(h => `
+    <div class="history-item">
+      <div>
+        <div class="history-time">🕐 ${h.time}</div>
+        <div class="history-items">${h.items.map(i=>`${i.emoji}${i.name}(${i.size})×${i.qty}`).join(', ')}</div>
+      </div>
+      <div class="history-total">฿${h.total.toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'summary') renderSummary();
+  if (name === 'history') renderHistory();
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function confirmReset() {
+  if (confirm('รีเซ็ตยอดวันนี้ทั้งหมด?\n(ประวัติจะถูกล้างด้วย)')) {
+    state = { cart:{}, sold:{}, history:[] };
+    saveState(state);
+    buildMenu();
+    renderCart();
+    renderSummary();
+    renderHistory();
+    showToast('🗑 รีเซ็ตเรียบร้อยแล้ว');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
